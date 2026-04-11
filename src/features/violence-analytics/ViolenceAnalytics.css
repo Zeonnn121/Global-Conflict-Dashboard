@@ -1,0 +1,273 @@
+/* Violence Analytics feature styles (scoped) */
+
+.va {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 12px 0 24px;
+}
+
+.vaHeader {
+  margin: 8px 4px 14px;
+}
+
+.vaHeader h1 {
+  font-size: 1.5rem;
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #111827;
+}
+
+.vaHeader p {
+  margin: 6px 0 0;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.dashboard-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 980px) {
+  .dashboard-container {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .map-container {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Cards */
+.chart-container,
+.map-container {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 20px;
+  border: 1px solid #e6e8ef;
+  box-shadow: 0 12px 30px rgba(16, 24, 40, 0.08);
+}
+
+.chart-container h2,
+.map-container h2 {
+  margin: 0 0 10px;
+  color: #111827;
+  font-size: 1.25rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  margin: 0 0 18px;
+  color: #6b7280;
+  font-size: 0.95rem;
+  font-weight: 400;
+}
+
+/* Ranking List */
+.ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #eef0f5;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.ranking-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(16, 24, 40, 0.08);
+  background: #ffffff;
+}
+
+.rank-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #111827;
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.rank-content {
+  flex: 1;
+}
+
+.country-name {
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
+  font-size: 1.02rem;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.rank-value {
+  font-weight: 700;
+  color: #111827;
+  font-size: 1rem;
+  min-width: 90px;
+  text-align: right;
+}
+
+/* Recharts tooltip */
+.recharts-tooltip {
+  background: rgba(255, 255, 255, 0.98) !important;
+  border: 1px solid #e6e8ef !important;
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(16, 24, 40, 0.12);
+}
+
+.recharts-tooltip-wrapper {
+  outline: none;
+}
+
+/* Map */
+.map-wrapper {
+  width: 100%;
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 14px;
+  margin: 14px 0;
+  border: 1px solid #eef0f5;
+  max-height: 450px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.map-wrapper svg {
+  width: 100% !important;
+  height: 400px !important;
+}
+
+.country-details {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #eef0f5;
+}
+
+.details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.details-header h3 {
+  margin: 0;
+  color: #111827;
+  font-size: 1.1rem;
+  font-weight: 650;
+}
+
+.close-btn {
+  background: none;
+  border: 1px solid #e6e8ef;
+  border-radius: 10px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  color: #111827;
+}
+
+.close-btn:hover {
+  background: #ffffff;
+}
+
+.incidents-table table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 12px;
+}
+
+.incidents-table thead {
+  background: #111827;
+  color: white;
+}
+
+.incidents-table th {
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 600;
+  border: none;
+}
+
+.incidents-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e5e7eb;
+  color: #111827;
+}
+
+.event-count {
+  font-weight: 650;
+  color: #111827;
+  text-align: right;
+}
+
+.incidents-summary {
+  padding: 12px;
+  background: #ffffff;
+  border-radius: 10px;
+  text-align: center;
+  color: #111827;
+  border: 1px solid #e6e8ef;
+}
+
+.no-data {
+  padding: 14px;
+  background: #ffffff;
+  border: 1px dashed #d1d5db;
+  border-radius: 10px;
+}
+
+.no-data-title {
+  font-weight: 650;
+  color: #111827;
+  margin-bottom: 6px;
+}
+
+.no-data-subtitle {
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 768px) {
+  .chart-container,
+  .map-container {
+    padding: 16px;
+  }
+
+  .rank-value {
+    min-width: 0;
+  }
+}
