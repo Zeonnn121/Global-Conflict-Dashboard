@@ -1,14 +1,14 @@
 import React, { useMemo, useState } from 'react';
 import './AppShell.css';
 import ViolenceAnalytics from './features/violence-analytics/ViolenceAnalytics';
+import SdgConflictDashboard from './features/SDG-indicators/sdgConflictDashBoard';
 
 function App() {
   const tabs = useMemo(
     () => [
       { key: 'violence', label: 'Violence analytics' },
-      { key: 'feature2', label: 'Feature 2' },
-      { key: 'feature3', label: 'Feature 3' },
-      { key: 'feature4', label: 'Feature 4' },
+      { key: 'feature2', label: 'SDG indicators' }
+    
     ],
     []
   );
@@ -20,26 +20,8 @@ function App() {
       case 'violence':
         return <ViolenceAnalytics />;
       case 'feature2':
-        return (
-          <div className="placeholder">
-            <h2>Feature 2</h2>
-            <p>Coming soon.</p>
-          </div>
-        );
-      case 'feature3':
-        return (
-          <div className="placeholder">
-            <h2>Feature 3</h2>
-            <p>Coming soon.</p>
-          </div>
-        );
-      case 'feature4':
-        return (
-          <div className="placeholder">
-            <h2>Feature 4</h2>
-            <p>Coming soon.</p>
-          </div>
-        );
+        return <SdgConflictDashboard />;
+    
       default:
         return null;
     }
