@@ -2,13 +2,16 @@ import React, { useMemo, useState } from 'react';
 import './AppShell.css';
 import ViolenceAnalytics from './features/violence-analytics/ViolenceAnalytics';
 import SdgConflictDashboard from './features/SDG-indicators/sdgConflictDashBoard';
-import loginUsers from './loginUsers.json';
+import WarUpdatesFeature from './features/SDG-indicators/WarUpdatesFeature';
+
+const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
 
 function App() {
   const tabs = useMemo(
     () => [
       { key: 'violence', label: 'Violence analytics' },
-      { key: 'feature2', label: 'SDG indicators' }
+      { key: 'feature2', label: 'SDG indicators' },
+      { key: 'warUpdates', label: 'War updates' }
     
     ],
     []
@@ -21,42 +24,45 @@ function App() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [authMessage, setAuthMessage] = useState('');
-  const [localUsers, setLocalUsers] = useState(() => {
-    try {
-      const storedUsers = localStorage.getItem('customLoginUsers');
-      const parsedUsers = storedUsers ? JSON.parse(storedUsers) : [];
-      return Array.isArray(parsedUsers) ? parsedUsers : [];
-    } catch (error) {
-      return [];
-    }
-  });
+  const [authToken, setAuthToken] = useState(() => localStorage.getItem('authToken') || '');
+  const [userRole, setUserRole] = useState(() => localStorage.getItem('loggedInRole') || 'user');
   const [loggedInEmail, setLoggedInEmail] = useState(() => localStorage.getItem('loggedInEmail') || '');
-  const allUsers = useMemo(() => [...loginUsers, ...localUsers], [localUsers]);
 
-  const isLoggedIn = Boolean(loggedInEmail);
+  const isLoggedIn = Boolean(authToken && loggedInEmail);
 
-  const handleLogin = (event) => {
+  const handleLogin = async (event) => {
     event.preventDefault();
 
-    const normalizedEmail = email.trim().toLowerCase();
-    const matchedUser = allUsers.find(
-      (user) => user.email.toLowerCase() === normalizedEmail && user.password === password
-    );
+    try {
+      const response = await fetch(`${API_BASE}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (!matchedUser) {
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || 'Login failed.');
+      }
+
+      setLoginError('');
       setAuthMessage('');
-      setLoginError('Invalid email or password.');
-      return;
-    }
+      setAuthToken(result.token);
+      setUserRole(result.user.role);
+      setLoggedInEmail(result.user.email);
 
-    setLoginError('');
-    setAuthMessage('');
-    setLoggedInEmail(matchedUser.email);
-    localStorage.setItem('loggedInEmail', matchedUser.email);
-    setPassword('');
+      localStorage.setItem('authToken', result.token);
+      localStorage.setItem('loggedInRole', result.user.role);
+      localStorage.setItem('loggedInEmail', result.user.email);
+
+      setPassword('');
+    } catch (error) {
+      setAuthMessage('');
+      setLoginError(error.message || 'Unable to sign in right now.');
+    }
   };
 
-  const handleSignUp = (event) => {
+  const handleSignUp = async (event) => {
     event.preventDefault();
 
     const normalizedEmail = email.trim().toLowerCase();
@@ -72,22 +78,27 @@ function App() {
       return;
     }
 
-    const emailExists = allUsers.some((user) => user.email.toLowerCase() === normalizedEmail);
-    if (emailExists) {
+    try {
+      const response = await fetch(`${API_BASE}/api/auth/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: normalizedEmail, password }),
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || 'Unable to create account.');
+      }
+
+      setLoginError('');
+      setAuthMessage(result.message || 'Account created. You can sign in now.');
+      setPassword('');
+      setConfirmPassword('');
+      setIsSignUpMode(false);
+    } catch (error) {
       setAuthMessage('');
-      setLoginError('This email already exists. Please sign in.');
-      return;
+      setLoginError(error.message || 'Unable to create account.');
     }
-
-    const nextUsers = [...localUsers, { email: normalizedEmail, password }];
-    setLocalUsers(nextUsers);
-    localStorage.setItem('customLoginUsers', JSON.stringify(nextUsers));
-
-    setLoginError('');
-    setAuthMessage('Account created. You can sign in now.');
-    setPassword('');
-    setConfirmPassword('');
-    setIsSignUpMode(false);
   };
 
   const toggleAuthMode = () => {
@@ -100,7 +111,11 @@ function App() {
   };
 
   const handleLogout = () => {
+    setAuthToken('');
+    setUserRole('user');
     setLoggedInEmail('');
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('loggedInRole');
     localStorage.removeItem('loggedInEmail');
   };
 
@@ -110,6 +125,14 @@ function App() {
         return <ViolenceAnalytics />;
       case 'feature2':
         return <SdgConflictDashboard />;
+      case 'warUpdates':
+        return (
+          <WarUpdatesFeature
+            authToken={authToken}
+            userRole={userRole}
+            currentUser={loggedInEmail}
+          />
+        );
     
       default:
         return null;
@@ -121,11 +144,7 @@ function App() {
       <div className="loginPage">
         <div className="loginCard">
           <h1>{isSignUpMode ? 'Create account' : 'OAuth Login'}</h1>
-          <p className="loginHint">
-            {isSignUpMode
-              ? 'Create a local account for this browser.'
-              : 'Welcome User!'}
-          </p>
+          <p className="loginHint">{isSignUpMode ? 'Create an account.' : 'Welcome User!'}</p>
 
           <form className="loginForm" onSubmit={isSignUpMode ? handleSignUp : handleLogin}>
             <label htmlFor="email">Email</label>
@@ -198,7 +217,7 @@ function App() {
               </button>
             ))}
             <button type="button" className="navButton" onClick={handleLogout}>
-              Logout ({loggedInEmail})
+              Logout ({loggedInEmail} - {userRole})
             </button>
           </div>
         </div>
