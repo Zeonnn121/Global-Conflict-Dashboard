@@ -36,7 +36,7 @@ const getTrendData = () => {
 
 // Process data for country comparison (latest year)
 const getCountryComparison = () => {
-  const year = 2019;
+  const year = 2016;
 
   const filtered = data
     .filter((item) => item.Year === year)

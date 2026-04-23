@@ -8,6 +8,7 @@ export default function WarUpdatesPanel({ authToken, userRole, currentUser }) {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [posting, setPosting] = useState(false);
+  const [liveStatus, setLiveStatus] = useState('connecting');
 
   const isAdmin = userRole === 'admin';
 
@@ -38,6 +39,47 @@ export default function WarUpdatesPanel({ authToken, userRole, currentUser }) {
       fetchUpdates();
     }
   }, [authToken, fetchUpdates]);
+
+  useEffect(() => {
+    // Live updates via Server-Sent Events (read-only stream).
+    if (!authToken) {
+      return undefined;
+    }
+
+    setLiveStatus('connecting');
+    const streamUrl = `${API_BASE}/api/war-updates/stream`;
+    const source = new EventSource(streamUrl);
+
+    const onOpen = () => setLiveStatus('live');
+    const onError = () => setLiveStatus('offline');
+
+    const onWarUpdate = (event) => {
+      try {
+        const update = JSON.parse(event.data);
+        if (!update || !update.id) return;
+
+        setUpdates((prev) => {
+          if (prev.some((item) => item.id === update.id)) {
+            return prev;
+          }
+          return [update, ...prev];
+        });
+      } catch (err) {
+        // ignore malformed events
+      }
+    };
+
+    source.addEventListener('open', onOpen);
+    source.addEventListener('error', onError);
+    source.addEventListener('war-update', onWarUpdate);
+
+    return () => {
+      source.removeEventListener('open', onOpen);
+      source.removeEventListener('error', onError);
+      source.removeEventListener('war-update', onWarUpdate);
+      source.close();
+    };
+  }, [authToken]);
 
   const handlePostUpdate = async (event) => {
     event.preventDefault();
@@ -82,6 +124,9 @@ export default function WarUpdatesPanel({ authToken, userRole, currentUser }) {
           <h3 className="sdgPanelTitle">War Updates Feed</h3>
           <p className="sdgSubtle">
             Signed in as {currentUser} ({userRole})
+          </p>
+          <p className="sdgSubtle">
+            Live updates: {liveStatus}
           </p>
         </div>
         <button type="button" className="sdgRefreshBtn" onClick={fetchUpdates} disabled={loading}>

@@ -35,7 +35,7 @@ const SDG_DATA = {
       { year: '2022', text: 'Supply-chain disruptions worsened living costs.', severity: 'severe' },
       { year: '2024', text: 'Multiple conflict fronts increased displacement.', severity: 'critical' },
     ],
-    meta: { sources: ['UN SDG Database', 'World Bank', 'ACLED'] },
+    meta: { sources: ['UN SDG Database', 'World Bank'] },
   },
   2: {
     sdg: 2,

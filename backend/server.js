@@ -36,6 +36,28 @@ const users = baseUsers.map((user) => ({
 
 const sessions = new Map();
 
+const sseClients = new Set();
+
+function sendSseEvent(res, event, data) {
+  res.write(`event: ${event}\n`);
+  res.write(`data: ${JSON.stringify(data)}\n\n`);
+}
+
+function broadcastWarUpdate(update) {
+  for (const client of sseClients) {
+    try {
+      sendSseEvent(client, 'war-update', update);
+    } catch (error) {
+      sseClients.delete(client);
+      try {
+        client.end();
+      } catch (endError) {
+        // ignore
+      }
+    }
+  }
+}
+
 function createSession(user) {
   const token = crypto.randomUUID();
   sessions.set(token, { email: user.email, role: user.role });
@@ -80,6 +102,33 @@ function authMiddleware(req, res, next) {
 
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true });
+});
+
+// Public read-only stream of war updates (SSE).
+// This enables live updates in the UI without polling.
+app.get('/api/war-updates/stream', (req, res) => {
+  res.status(200);
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  // Immediately establish the stream.
+  res.write(': connected\n\n');
+
+  sseClients.add(res);
+
+  const keepAlive = setInterval(() => {
+    try {
+      res.write(': ping\n\n');
+    } catch (error) {
+      // ignore
+    }
+  }, 20000);
+
+  req.on('close', () => {
+    clearInterval(keepAlive);
+    sseClients.delete(res);
+  });
 });
 
 app.post('/api/auth/login', (req, res) => {
@@ -150,6 +199,13 @@ app.post('/api/war-updates', authMiddleware, (req, res) => {
 
   updates.push(update);
   writeJson(WAR_UPDATES_PATH, updates);
+
+  // Push update to live subscribers.
+  broadcastWarUpdate({
+    id: update.id,
+    message: update.message,
+    author: update.author,
+  });
 
   return res.status(201).json({
     update: {
